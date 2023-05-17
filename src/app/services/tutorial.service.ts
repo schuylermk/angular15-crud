@@ -13,6 +13,7 @@ export class TutorialService {
   constructor(private http: HttpClient) { }
 
   getAll(params: any): Observable<any> {
+    console.log(params);
     return this.http.get<any>(baseUrl, { params });
   }
   get(id: any): Observable<Tutorial> {

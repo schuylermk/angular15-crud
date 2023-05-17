@@ -16,12 +16,11 @@ export class TutorialsListComponent implements OnInit {
 
   page = 1;
   count = 0;
-  pageSize = 3;
+  pageSize = 6;
   pageSizes = [3, 6, 9];
 
   constructor(private tutorialService: TutorialService) { }
 
-  
   ngOnInit(): void {
     this.retrieveTutorials();
   }
@@ -44,7 +43,24 @@ export class TutorialsListComponent implements OnInit {
     return params;
   }
 
-  handlePageChangeEvent(event: number): void {
+  retrieveTutorials(): void {
+    const params = this.getRequestParams(this.title, this.page, this.pageSize);
+
+    this.tutorialService.getAll(params)
+      .subscribe({
+        next: (data) => {
+          const { tutorials, totalItems } = data;
+          this.tutorials = tutorials;
+          this.count = totalItems;
+          console.log(data);
+        },
+        error: (err) => {
+          console.log(err);
+        }
+      });
+  }
+
+  handlePageChange(event: number): void {
     this.page = event;
     this.retrieveTutorials();
   }
@@ -53,23 +69,6 @@ export class TutorialsListComponent implements OnInit {
     this.pageSize = event.target.value;
     this.page = 1;
     this.retrieveTutorials();
-  }
-
-  retrieveTutorials(): void {
-    const params = this.getRequestParams(this.title, this.page, this.pageSize);
-
-    this.tutorialService.getAll(params)
-    .subscribe({
-      next: response => {
-        const { tutorials, totalItems } = response;
-        this.tutorials = tutorials;
-        this.count = totalItems;
-        console.log(response);
-      },
-      error: error => {
-        console.log(error);
-      }
-    });
   }
 
   refreshList(): void {
@@ -86,26 +85,20 @@ export class TutorialsListComponent implements OnInit {
   removeAllTutorials(): void {
     this.tutorialService.deleteAll()
       .subscribe({
-        next: (res) => {
+        next: res => {
           console.log(res);
           this.refreshList();
         },
-        error: (e) => console.error(e)
+        error: err => {
+          console.log(err);
+        }
       });
+
   }
 
   searchTitle(): void {
-    this.currentTutorial = {};
-    this.currentIndex = -1;
-
-    this.tutorialService.findByTitle(this.title)
-      .subscribe({
-        next: (data) => {
-          this.tutorials = data;
-          console.log(data);
-        },
-        error: (e) => console.error(e)
-      });
+    this.page = 1;
+    this.retrieveTutorials();
   }
 
 }
